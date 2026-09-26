@@ -21,6 +21,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "stm32l031xx.h"
+#include "stm32l0xx_hal_gpio.h"
 #include "time.h"
 #include <cstdint>
 #include <cstring>
@@ -52,6 +54,8 @@ UART_HandleTypeDef huart2;
 Time time;
 char *time_val;
 
+uint8_t LED_PIN = 3;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -62,6 +66,7 @@ static void MX_USART2_UART_Init(void);
 /* USER CODE BEGIN PFP */
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim);
 void printTime();
+void GPIOBToggle(uint8_t pin);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -101,6 +106,7 @@ int main(void)
   MX_TIM2_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
+  HAL_GPIO_WritePin(LD3_GPIO_Port, LD3_Pin,  GPIO_PIN_RESET);
 
   // start timer
   HAL_TIM_Base_Start_IT(&htim2);
@@ -292,8 +298,18 @@ HAL_TIM_PeriodElapsedCallback is declared as __weak which means it can be overwr
 */
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
   time++;
-	HAL_GPIO_TogglePin(GPIOB, LD3_Pin);
-  printTime();
+	// HAL_GPIO_TogglePin(GPIOB, LD3_Pin);
+  // printTime();
+  GPIOBToggle(3);
+}
+
+/*
+Direct toggle of the GPIO pin without using the HAL. Quicker than the HAL
+because no need to check certain conditions before toggling
+*/
+void GPIOBToggle(uint8_t pin)
+{
+    GPIOB->ODR ^= (1U << pin);
 }
 
 void printTime(){
